@@ -1,16 +1,8 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-
-interface Transaction {
-  id: string
-  category: string
-  amount: number
-  date: string
-  description?: string
-}
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
 
 export const useTransactionStore = defineStore('transaction', () => {
-  const transactions = ref<Transaction[]>([
+  const transactions = ref([
     // January
     {
       id: 'jan1',
@@ -26,7 +18,7 @@ export const useTransactionStore = defineStore('transaction', () => {
       date: 'January 10, 2024',
       description: 'Monthly groceries'
     },
-    
+
     // February
     {
       id: 'feb1',
@@ -42,7 +34,7 @@ export const useTransactionStore = defineStore('transaction', () => {
       date: 'February 15, 2024',
       description: 'Car insurance'
     },
-    
+
     // March
     {
       id: 'mar1',
@@ -58,7 +50,7 @@ export const useTransactionStore = defineStore('transaction', () => {
       date: 'March 12, 2024',
       description: 'New clothes'
     },
-    
+
     // April
     {
       id: 'apr1',
@@ -74,7 +66,7 @@ export const useTransactionStore = defineStore('transaction', () => {
       date: 'April 15, 2024',
       description: 'Electricity bill'
     },
-    
+
     // May (existing transactions)
     {
       id: '1',
@@ -153,51 +145,51 @@ export const useTransactionStore = defineStore('transaction', () => {
       date: 'May 22, 2024',
       description: 'Car insurance'
     }
-  ])
-  
-  const selectedMonth = ref('May')
-  
-  function setSelectedMonth(month: string) {
-    selectedMonth.value = month
+  ]);
+
+  const selectedMonth = ref('May');
+
+  function setSelectedMonth(month) {
+    selectedMonth.value = month;
   }
-  
-  function addTransaction(transaction: Transaction) {
-    transactions.value.push(transaction)
+
+  function addTransaction(transaction) {
+    transactions.value.push(transaction);
   }
-  
-  function updateTransaction(updatedTransaction: Transaction) {
-    const index = transactions.value.findIndex(t => t.id === updatedTransaction.id)
+
+  function updateTransaction(updatedTransaction) {
+    const index = transactions.value.findIndex(t => t.id === updatedTransaction.id);
     if (index !== -1) {
-      transactions.value[index] = updatedTransaction
+      transactions.value[index] = updatedTransaction;
     }
   }
-  
-  function deleteTransaction(id: string) {
-    transactions.value = transactions.value.filter(t => t.id !== id)
+
+  function deleteTransaction(id) {
+    transactions.value = transactions.value.filter(t => t.id !== id);
   }
-  
-  function getTransactionsByMonth(month: string) {
-    return transactions.value.filter(t => t.date.includes(month))
+
+  function getTransactionsByMonth(month) {
+    return transactions.value.filter(t => t.date.includes(month));
   }
-  
-  function getTotalByMonth(month: string) {
-    return getTransactionsByMonth(month).reduce((sum, t) => sum + t.amount, 0)
+
+  function getTotalByMonth(month) {
+    return getTransactionsByMonth(month).reduce((sum, t) => sum + t.amount, 0);
   }
-  
+
   function getTotal() {
-    return transactions.value.reduce((sum, t) => sum + t.amount, 0)
+    return transactions.value.reduce((sum, t) => sum + t.amount, 0);
   }
-  
+
   function getAverage() {
-    if (transactions.value.length === 0) return 0
-    return getTotal() / transactions.value.length
+    if (transactions.value.length === 0) return 0;
+    return getTotal() / transactions.value.length;
   }
-  
+
   function getHighest() {
-    if (transactions.value.length === 0) return 0
-    return Math.max(...transactions.value.map(t => t.amount))
+    if (transactions.value.length === 0) return 0;
+    return Math.max(...transactions.value.map(t => t.amount));
   }
-  
+
   return {
     transactions,
     selectedMonth,
@@ -210,5 +202,5 @@ export const useTransactionStore = defineStore('transaction', () => {
     getTotal,
     getAverage,
     getHighest
-  }
-})
+  };
+});
