@@ -11,6 +11,71 @@ interface Transaction {
 
 export const useTransactionStore = defineStore('transaction', () => {
   const transactions = ref<Transaction[]>([
+    // January
+    {
+      id: 'jan1',
+      category: 'Freelance',
+      amount: 800.00,
+      date: 'January 5, 2024',
+      description: 'Website development project'
+    },
+    {
+      id: 'jan2',
+      category: 'Groceries',
+      amount: 150.50,
+      date: 'January 10, 2024',
+      description: 'Monthly groceries'
+    },
+    
+    // February
+    {
+      id: 'feb1',
+      category: 'Online Sale',
+      amount: 300.00,
+      date: 'February 3, 2024',
+      description: 'Sold unused electronics'
+    },
+    {
+      id: 'feb2',
+      category: 'Insurance',
+      amount: 180.00,
+      date: 'February 15, 2024',
+      description: 'Car insurance'
+    },
+    
+    // March
+    {
+      id: 'mar1',
+      category: 'Freelance',
+      amount: 1200.00,
+      date: 'March 7, 2024',
+      description: 'Mobile app development'
+    },
+    {
+      id: 'mar2',
+      category: 'Shopping',
+      amount: 250.00,
+      date: 'March 12, 2024',
+      description: 'New clothes'
+    },
+    
+    // April
+    {
+      id: 'apr1',
+      category: 'Online Sale',
+      amount: 450.00,
+      date: 'April 4, 2024',
+      description: 'Sold furniture'
+    },
+    {
+      id: 'apr2',
+      category: 'Utilities',
+      amount: 95.00,
+      date: 'April 15, 2024',
+      description: 'Electricity bill'
+    },
+    
+    // May (existing transactions)
     {
       id: '1',
       category: 'Groceries',
