@@ -9,12 +9,26 @@ const showModal = ref(false)
 const editingTransaction = ref(null)
 const searchQuery = ref('')
 
+const months = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+]
+
 const filteredTransactions = computed(() => {
-  return store.transactions.filter(transaction => 
-    transaction.category.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    transaction.description?.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
+  return store.transactions.filter(transaction => {
+    const matchesSearch =
+      transaction.category.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      transaction.description?.toLowerCase().includes(searchQuery.value.toLowerCase())
+
+    const matchesMonth = transaction.date.includes(store.selectedMonth)
+
+    return matchesSearch && matchesMonth
+  })
 })
+
+function isIncome(transaction: any): boolean {
+  return transaction.category === 'Freelance' || transaction.category === 'Online Sale'
+}
 
 function openModal(transaction = null) {
   editingTransaction.value = transaction
@@ -47,6 +61,21 @@ function handleDeleteTransaction(id: string) {
       <button class="add-btn" @click="openModal()">+ Add Transaction</button>
     </div>
 
+    <!-- Month Selector -->
+    <div class="month-selector">
+      <h3>Select Month</h3>
+      <div class="months-list">
+        <button
+          v-for="month in months"
+          :key="month"
+          @click="store.setSelectedMonth(month)"
+          :class="{ active: store.selectedMonth === month }"
+        >
+          {{ month }}
+        </button>
+      </div>
+    </div>
+
     <div class="search-bar">
       <input 
         type="text" 
@@ -72,7 +101,11 @@ function handleDeleteTransaction(id: string) {
             <td>{{ transaction.date }}</td>
             <td>{{ transaction.category }}</td>
             <td>{{ transaction.description || '-' }}</td>
-            <td class="amount-cell">{{ formatCurrency(transaction.amount) }}</td>
+            <td class="amount-cell">
+              <p class="transaction-amount" :class="{ income: isIncome(transaction) }">
+                {{ (isIncome(transaction) ? '+' : '-') + formatCurrency(transaction.amount) }}
+              </p>
+            </td>
             <td class="actions-cell">
               <button class="action-btn edit-btn" @click="openModal(transaction)">Edit</button>
               <button class="action-btn delete-btn" @click="handleDeleteTransaction(transaction.id)">Delete</button>
@@ -157,6 +190,16 @@ th {
   font-weight: 600;
 }
 
+.transaction-amount {
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: #EF4444; /* expense red */
+}
+
+.transaction-amount.income {
+  color: #10B981; /* income green */
+}
+
 .actions-cell {
   display: flex;
   gap: 0.5rem;
@@ -187,5 +230,33 @@ th {
   text-align: center;
   color: var(--text-muted);
   padding: 2rem;
+}
+
+.month-selector {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.months-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.months-list button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.months-list button.active {
+  background-color: var(--primary-color);
+  color: white;
 }
 </style>
