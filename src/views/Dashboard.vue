@@ -1,25 +1,35 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useTransactionStore } from '../stores/transaction'
 import { formatCurrency } from '../utils/formatter'
 import TransactionModal from '../components/TransactionModal.vue'
 
 const store = useTransactionStore()
-const showModal = ref(false)
-const selectedMonth = ref('May')
+
+// Bind selectedMonth from store with getter/setter
+const selectedMonth = computed({
+  get: () => store.selectedMonth,
+  set: (val: string) => store.setSelectedMonth(val),
+})
+
+const months = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+]
 
 const transactions = computed(() => store.getTransactionsByMonth(selectedMonth.value))
-const totalAmount = computed(() => store.getTotalByMonth(selectedMonth.value))
-const totalIncome = computed(() => 
+const totalIncome = computed(() =>
   transactions.value
     .filter(t => t.category === 'Freelance' || t.category === 'Online Sale')
     .reduce((sum, t) => sum + t.amount, 0)
 )
-const totalExpenses = computed(() => 
+const totalExpenses = computed(() =>
   transactions.value
     .filter(t => t.category !== 'Freelance' && t.category !== 'Online Sale')
     .reduce((sum, t) => sum + t.amount, 0)
 )
+
+const showModal = ref(false)
 
 function openModal() {
   showModal.value = true
@@ -42,22 +52,34 @@ function handleAddTransaction(transaction: any) {
       <button class="add-btn" @click="openModal">+ Add Transaction</button>
     </div>
 
+    <!-- Month Selector -->
+    <div class="month-selector">
+      <button
+        v-for="month in months"
+        :key="month"
+        @click="selectedMonth = month"
+        :class="{ active: selectedMonth === month }"
+      >
+        {{ month }}
+      </button>
+    </div>
+
     <div class="summary-cards">
       <div class="card summary-card income">
         <h3>Total Income</h3>
         <p class="amount">{{ formatCurrency(totalIncome) }}</p>
         <div class="card-icon">💰</div>
       </div>
-      
+
       <div class="card summary-card expenses">
         <h3>Total Expenses</h3>
         <p class="amount">{{ formatCurrency(totalExpenses) }}</p>
         <div class="card-icon">💳</div>
       </div>
-      
+
       <div class="card summary-card balance">
         <h3>Net Balance</h3>
-        <p class="amount" :class="{ 'positive': totalIncome > totalExpenses }">
+        <p class="amount" :class="{ positive: totalIncome > totalExpenses }">
           {{ formatCurrency(totalIncome - totalExpenses) }}
         </p>
         <div class="card-icon">📊</div>
@@ -72,14 +94,21 @@ function handleAddTransaction(transaction: any) {
             {{ transactions.length }} transactions this month
           </div>
         </div>
-        
+
         <div class="transaction-list">
-          <div v-for="transaction in transactions.slice(0, 5)" :key="transaction.id" 
-               class="transaction-item hover-effect">
+          <div
+            v-for="transaction in transactions.slice(0, 5)"
+            :key="transaction.id"
+            class="transaction-item hover-effect"
+          >
             <div class="transaction-info">
               <div class="transaction-category">
                 <span class="category-icon">
-                  {{ transaction.category === 'Freelance' || transaction.category === 'Online Sale' ? '↗️' : '↘️' }}
+                  {{
+                    transaction.category === 'Freelance' || transaction.category === 'Online Sale'
+                      ? '↗️'
+                      : '↘️'
+                  }}
                 </span>
                 <h4>{{ transaction.category }}</h4>
               </div>
@@ -88,9 +117,12 @@ function handleAddTransaction(transaction: any) {
                 {{ transaction.description }}
               </p>
             </div>
-            <p class="transaction-amount" :class="{
-              'income': transaction.category === 'Freelance' || transaction.category === 'Online Sale'
-            }">
+            <p
+              class="transaction-amount"
+              :class="{
+                income: transaction.category === 'Freelance' || transaction.category === 'Online Sale',
+              }"
+            >
               {{ formatCurrency(transaction.amount) }}
             </p>
           </div>
@@ -101,15 +133,31 @@ function handleAddTransaction(transaction: any) {
       </div>
     </div>
 
-    <TransactionModal 
-      v-if="showModal" 
-      @close="closeModal" 
-      @add-transaction="handleAddTransaction" 
-    />
+    <TransactionModal v-if="showModal" @close="closeModal" @add-transaction="handleAddTransaction" />
   </div>
 </template>
 
 <style scoped>
+.month-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.month-selector button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #eee;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.month-selector button.active {
+  background-color: #10b981;
+  color: white;
+}
+
 .dashboard {
   width: 100%;
   height: 100%;
@@ -260,13 +308,13 @@ function handleAddTransaction(transaction: any) {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .transaction-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .transaction-amount {
     align-self: flex-end;
   }
