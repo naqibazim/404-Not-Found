@@ -1,68 +1,106 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useTransactionStore } from '../stores/transaction'
 import { formatCurrency } from '../utils/formatter'
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js'
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title
+} from 'chart.js'
 import { Pie, Bar } from 'vue-chartjs'
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title)
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title
+)
 
 const store = useTransactionStore()
 const selectedPeriod = ref('month')
 
+const months = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+]
+
 const categoryTotals = computed(() => {
   const totals: Record<string, number> = {}
-  
+
   store.transactions.forEach(transaction => {
     if (!totals[transaction.category]) {
       totals[transaction.category] = 0
     }
     totals[transaction.category] += transaction.amount
   })
-  
+
   return totals
 })
 
 const monthlyTotals = computed(() => {
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                 'July', 'August', 'September', 'October', 'November', 'December']
   const totals: Record<string, number> = {}
-  
+
   months.forEach(month => {
     totals[month] = store.getTotalByMonth(month)
   })
-  
+
   return totals
 })
 
 const pieChartData = computed(() => {
+  const labels = Object.keys(categoryTotals.value)
+  const colors = [
+    '#4CAF50', // Green
+    '#FF9800', // Orange
+    '#2196F3', // Blue
+    '#9C27B0', // Purple
+    '#00BCD4', // Cyan
+    '#E91E63', // Pink
+    '#FFC107', // Amber
+    '#3F51B5', // Indigo
+    '#009688', // Teal
+    '#795548'  // Brown
+  ]
+
+  // Copy colors to avoid mutation
+  const backgroundColor = [...colors]
+
+  // Change Petrol category color to bright red
+  const petrolIndex = labels.findIndex(label => label.toLowerCase() === 'petrol')
+  if (petrolIndex !== -1) {
+    backgroundColor[petrolIndex] = '#FF0000' // Bright red for Petrol
+  }
+
   return {
-    labels: Object.keys(categoryTotals.value),
+    labels,
     datasets: [
       {
         data: Object.values(categoryTotals.value),
-        backgroundColor: [
-          '#27AE60', '#2ECC71', '#F39C12', '#E67E22', '#3498DB', 
-          '#2980B9', '#9B59B6', '#8E44AD', '#1ABC9C', '#16A085'
-        ],
+        backgroundColor,
         borderWidth: 0
       }
     ]
   }
 })
 
-const barChartData = computed(() => {
-  return {
-    labels: Object.keys(monthlyTotals.value),
-    datasets: [
-      {
-        label: 'Monthly Expenses',
-        data: Object.values(monthlyTotals.value),
-        backgroundColor: '#27AE60'
-      }
-    ]
-  }
-})
+const barChartData = computed(() => ({
+  labels: Object.keys(monthlyTotals.value),
+  datasets: [
+    {
+      label: 'Monthly Expenses',
+      data: Object.values(monthlyTotals.value),
+      backgroundColor: '#FF5722' // Deep orange
+    }
+  ]
+}))
 
 const chartOptions = {
   responsive: true,
@@ -81,20 +119,12 @@ const barChartOptions = {
   ...chartOptions,
   scales: {
     y: {
-      ticks: {
-        color: 'rgba(255, 255, 255, 0.87)'
-      },
-      grid: {
-        color: 'rgba(255, 255, 255, 0.1)'
-      }
+      ticks: { color: 'rgba(255, 255, 255, 0.87)' },
+      grid: { color: 'rgba(255, 255, 255, 0.1)' }
     },
     x: {
-      ticks: {
-        color: 'rgba(255, 255, 255, 0.87)'
-      },
-      grid: {
-        color: 'rgba(255, 255, 255, 0.1)'
-      }
+      ticks: { color: 'rgba(255, 255, 255, 0.87)' },
+      grid: { color: 'rgba(255, 255, 255, 0.1)' }
     }
   }
 }
@@ -103,38 +133,38 @@ const barChartOptions = {
 <template>
   <div class="statistics-view">
     <h1>Statistics</h1>
-    
+
     <div class="stats-period">
-      <button 
-        :class="['period-btn', selectedPeriod === 'month' ? 'active' : '']" 
+      <button
+        :class="['period-btn', selectedPeriod === 'month' ? 'active' : '']"
         @click="selectedPeriod = 'month'"
       >
         Monthly
       </button>
-      <button 
-        :class="['period-btn', selectedPeriod === 'category' ? 'active' : '']" 
+      <button
+        :class="['period-btn', selectedPeriod === 'category' ? 'active' : '']"
         @click="selectedPeriod = 'category'"
       >
         By Category
       </button>
     </div>
-    
+
     <div class="charts-container">
-      <div class="card chart-card pie-chart">
+      <div class="card chart-card pie-chart" v-if="selectedPeriod === 'category'">
         <h3>Spending by Category</h3>
         <div class="chart-wrapper">
           <Pie :data="pieChartData" :options="chartOptions" />
         </div>
       </div>
-      
-      <div class="card chart-card bar-chart">
+
+      <div class="card chart-card bar-chart" v-if="selectedPeriod === 'month'">
         <h3>Monthly Spending</h3>
         <div class="chart-wrapper">
           <Bar :data="barChartData" :options="barChartOptions" />
         </div>
       </div>
     </div>
-    
+
     <div class="card stats-summary">
       <h3>Summary</h3>
       <div class="summary-items">
